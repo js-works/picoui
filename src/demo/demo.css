@@ -1,0 +1,243 @@
+/* No page-local color tokens here — the demo adopts the library's own theme
+   (see theme.ts's :root selector, adopted in demo.ts) so its chrome uses the
+   exact same --ui-bg/--ui-text/--ui-color-* custom properties the components
+   themselves read, rather than a separate hand-picked palette that could drift
+   out of sync with whatever theme is active. */
+
+:root {
+  /* No color-scheme pin here: the adopted theme sets `light dark` on :root
+     (follow the OS) and the header's Theme picker overrides that on <html>
+     to force one — see theme.ts's own note on why that property, and not a
+     token override, is the light/dark switch. */
+
+  /* Reserves the scrollbar's width up front instead of only when a tab's
+     content is actually tall enough to scroll — without this, switching to
+     a shorter/taller tab makes the viewport's content area jump sideways as
+     the scrollbar appears/disappears. */
+  scrollbar-gutter: stable;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1rem 1.5rem 2.5rem;
+  /* A light gray page in light mode (not --ui-bg's white, which the sections
+     themselves are painted with) so each section reads as a card sitting on
+     the page rather than as bordered regions of one continuous white sheet.
+     Only light mode: --ui-bg is already #050505 in dark, and nothing in the
+     neutral ramp goes darker than that, so a "one step off the surface"
+     page-vs-card contrast can only be had in one direction here — dark keeps
+     the sections and the page in step, which is what the whole page did
+     before this.
+
+     Either way it's --ui-bg-derived rather than the `transparent` this once
+     was (which fell through to the UA's own canvas): the UA's *dark* canvas
+     is a browser-specific near-black no token controls, leaving the page a
+     slightly different shade from the sections painted on it, differently per
+     browser. */
+  background: light-dark(var(--ui-color-neutral-100), var(--ui-bg));
+  color: var(--ui-text);
+  font-family: var(--ui-font-sans);
+  line-height: 1.5;
+}
+
+.combobox-demo {
+  width: 20rem;
+}
+
+.page {
+  display: block;
+  margin: 0 auto;
+  max-width: 100rem;
+  padding: 0 0 2rem;
+  user-select: none;
+}
+
+header {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--ui-color-neutral-200);
+}
+
+/* margin-inline-start: auto (not header's own justify-content:
+   space-between) flushes this against the flex line's own end edge —
+   which, since header has no horizontal padding of its own, lines up with
+   ui-tabs's right edge below (also a direct, unpadded .page child, so both
+   share the exact same right edge regardless of how many controls end up
+   in here). */
+.header-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-inline-start: auto;
+}
+
+/* ui-select.scale-control, not just .scale-control — select.styles.ts's own
+   :host rule sets --select-min-width: 12em unconditionally (its comment
+   there explicitly invites overriding it for exactly this "narrow trigger"
+   case), and a bare class selector ties that :host rule's own specificity,
+   which the component's own shadow-tree rule wins by default. Adding the
+   element type bumps this selector just past the tie. Plain `width` alone
+   (without this) does nothing useful here: the trigger's internal .wrapper
+   still enforces the 12em min-width from inside, so the host just overflows
+   its declared width instead of actually shrinking. */
+ui-select.scale-control {
+  flex: none;
+  --select-min-width: 4em;
+}
+
+ui-select.locale-control {
+  flex: none;
+  --select-min-width: 5em;
+}
+
+ui-select.theme-control {
+  flex: none;
+  --select-min-width: 6em;
+}
+
+/* Size and weight come from ui-heading itself (level="1"); the display-face
+   letter-spacing is the one piece of demo styling left. ui-heading's :host
+   already sets margin: 0, so nothing here has to cancel one. */
+.page-title {
+  letter-spacing: -0.02em;
+}
+
+section {
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-color-neutral-200);
+  border-radius: var(--ui-radius-lg);
+  padding: var(--ui-spacing-lg);
+  margin-bottom: var(--ui-spacing-lg);
+}
+
+section:last-child {
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ui-color-neutral-500);
+  margin: 0 0 1rem;
+}
+
+/* align-items: flex-start, not flex's default `stretch` — stretch made every
+   control in a row as tall as the tallest one, which silently erased the very
+   difference some rows exist to show: a size="small" field next to a
+   size="large" one got stretched to the large one's height (fields let this
+   through by design — ui-text-field's .wrapper is `flex-grow: 1` inside the
+   host's own column layout, so a host stretched from outside grows the input
+   box with it, which is what makes a field fill e.g. a grid cell). Each
+   control now keeps its own intrinsic height. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.row + .row {
+  margin-top: 0.5rem;
+}
+
+.button-showcase .row {
+  align-items: center;
+}
+
+/* One column per variant (plus the leading appearance label), so a variant
+   lines up in the same column across every appearance row instead of each
+   row wrapping independently like .row does. */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(6, max-content);
+  align-items: center;
+  gap: 0.35rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+
+/* Date Picker page — the live picker beside its control panel. Wraps to one
+   column when there isn't room for both side by side. */
+.picker-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ui-spacing-lg);
+}
+
+.picker-demo-main {
+  flex: 0 1 24rem;
+}
+
+/* The picker sizes itself (the core's .cal-base carries its own min-width and
+   min-height), so this only gives it the card treatment. */
+.picker-demo-picker {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--ui-color-neutral-200);
+  border-radius: var(--ui-radius-md);
+  padding: var(--ui-spacing-md);
+}
+
+.picker-demo-selection {
+  margin: var(--ui-spacing-md) 0 0;
+  font-size: 0.85rem;
+  color: var(--ui-color-neutral-600);
+}
+
+.picker-demo-selection strong {
+  color: var(--ui-text);
+  font-weight: 600;
+}
+
+/* Narrower than the pickers' own column but wide enough for the longest
+   calendar-size label. */
+.picker-demo-controls {
+  flex: 1 1 20rem;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Both fields on one line where they fit, since they're a matched pair. */
+.picker-demo-range {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--ui-spacing-md);
+  margin-top: var(--ui-spacing-sm);
+}
+
+/* Date Fields page — one field per selection mode, in a responsive grid with
+   the raw stored value under each. */
+.date-fields-locale {
+  margin-bottom: var(--ui-spacing-lg);
+}
+
+.date-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--ui-spacing-lg);
+}
+
+.date-fields-cell ui-date-field {
+  width: 100%;
+}
+
+/* The raw picker value behind the formatted display — deliberately shown, since
+   the point of the Locale selector above is that this half does *not* change. */
+.date-fields-raw {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ui-color-neutral-600);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,76 @@
+# Builds the demo (src/demo) and publishes it to GitHub Pages on every push to
+# main, reachable at https://js-works.github.io/picoui/
+#
+# Requires one repository setting, which cannot live in this file: enable
+# Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Without that, this workflow runs but the deploy step fails.
+#
+# Only the demo is published here. The library build (`npm run build`, which
+# emits dist/ for npm) is not part of this workflow.
+
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets a deploy be re-run from the Actions tab without an empty commit.
+  workflow_dispatch:
+
+# The three permissions the Pages deployment needs: read the repo, write a
+# Pages deployment, and mint the OIDC token deploy-pages authenticates with.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# A Pages site has exactly one live deployment, so overlapping runs would race.
+# Queue them instead of cancelling: cancel-in-progress would abandon a
+# half-finished deploy, and letting the older one land first keeps the site
+# consistent with the newest completed build.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches the local toolchain (Vite 8 needs at least 20.19 / 22.12).
+          # No `cache: npm` here: that keys the cache off a lockfile hash, and
+          # package-lock.json is gitignored in this repo, so enabling it fails
+          # the step outright with "Dependencies lock file is not found".
+          node-version: "24"
+
+      # `npm install`, not `npm ci` — see the note above about the lockfile.
+      - run: npm install
+
+      # Fails the deploy on a type error rather than publishing a demo built
+      # from code that does not typecheck.
+      - run: npm run typecheck
+
+      - run: npm run build:demo
+
+      # Rewrites nothing — vite.config.js already sets `base: './'`, so the
+      # built asset URLs are relative and work unchanged from the /picoui/
+      # subpath a project Pages site is served from.
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      # Surfaces the live URL on the workflow run and in the repo's
+      # Environments view, so it does not have to be remembered.
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
