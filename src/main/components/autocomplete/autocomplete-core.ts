@@ -14,6 +14,7 @@
 
 import { trackPopupLayout } from "../../shared/popup-layout/popup-layout.js";
 import { scrollIntoListboxView } from "../../shared/scroll-into-listbox-view.js";
+import { buildMultiFormData } from "../../shared/pills/pill-values.js";
 
 export interface AutocompleteItemGroup {
   label?: string;
@@ -332,17 +333,15 @@ export function injectAutocomplete(
 
   // Multi-select has no single string to submit, so it hands the internals a
   // FormData with one entry per selected value under this element's own
-  // `name` — the browser folds those straight into the parent form's
-  // submission.
+  // `name` (buildMultiFormData) — the browser folds those straight into the
+  // parent form's submission.
   function syncFormValue(): void {
     if (config.getDisabled()) {
       internals.setFormValue(null);
       return;
     }
     if (config.getMultiple()) {
-      const formData = new FormData();
-      for (const item of values) formData.append(config.getName(), item);
-      internals.setFormValue(formData);
+      internals.setFormValue(buildMultiFormData(config.getName(), values));
     } else {
       internals.setFormValue(value);
     }

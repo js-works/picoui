@@ -8,22 +8,13 @@ import "../select/option.js";
 import "../select/option-group.js";
 import type { Option } from "../select/option.js";
 import { trackPopupLayout } from "../../shared/popup-layout/popup-layout.js";
-import { scrollIntoListboxView } from "../../shared/scroll-into-listbox-view.js";
-import {
-  renderPills,
-  togglePillValue,
-  removePillValue,
-  buildMultiFormData,
-} from "../../shared/pills/pills.js";
+import { renderPills } from "../../shared/pills/pills.js";
 import { renderFieldLabel } from "../../shared/field-label/field-label.js";
 import { focusOnLabelClick } from "../../shared/label-focus/label-focus.js";
-
-// Mixed into every generated option id (see #setActiveIndex) alongside the
-// incrementing counter below, so ids stay collision-safe against another
-// copy of this same module bundled elsewhere on the page (each gets its own
-// random instance number, rather than every copy's counter restarting at 1).
-const instanceId = Math.floor(Math.random() * 1e9);
-let nextOptionId = 0;
+import {
+  OptionListController,
+  type OptionListItem,
+} from "../../shared/option-list/option-list-core.js";
 
 /**
  * Like `ui-select`, but editable: a text input filters the `<ui-option>` children
@@ -33,6 +24,13 @@ let nextOptionId = 0;
  * synchronously by comparing its `.label` against the typed text (see
  * #applyFilter), the same way `ui-select` reads that DOM directly rather than
  * rendering plain data rows.
+ *
+ * The listbox engine — option enumeration, active-option tracking, open/close,
+ * keyboard navigation, single-pick vs multi-toggle, form association — is the
+ * shared `OptionListController` (shared/option-list/option-list-core.ts, also
+ * used by `ui-select`). This component adds the text input on top: the
+ * client-side filter, previewing the arrow-highlighted option in the input,
+ * and `allow-custom-value`.
  *
  * Single-select (default) tracks the pick in `value` and mirrors it into the input
  * text, closing the popup on pick. `multiple` (like `<select multiple>`) instead
@@ -52,17 +50,8 @@ export class Combobox extends LitElement {
 
   #internals: ElementInternals;
   #input!: HTMLInputElement;
+  #core!: OptionListController;
   #popupLayout?: ReturnType<typeof trackPopupLayout>;
-  // Options we generated an id for (see #setActiveIndex) — a slotted
-  // <ui-option> is the consumer's own element, so we only ever assign it an
-  // id (needed for aria-activedescendant, which requires a real id
-  // reference — a data-* attribute wouldn't satisfy that) when it doesn't
-  // already have one, and only for as long as it's actually the active
-  // option; tracked here so #setActiveIndex knows which ids are ours to
-  // remove again once an option stops being active, rather than leaving
-  // generated ids permanently stuck on every option a user has ever arrowed
-  // past.
-  #generatedIdOptions = new WeakSet<Option>();
 
   @property()
   accessor name = "";
@@ -107,13 +96,7 @@ export class Combobox extends LitElement {
   accessor size: "small" | "medium" | "large" = "medium";
 
   @state()
-  accessor open = false;
-
-  @state()
   accessor query = "";
-
-  @state()
-  accessor activeIndex = -1;
 
   constructor() {
     super();
@@ -127,11 +110,32 @@ export class Combobox extends LitElement {
 
   protected firstUpdated() {
     this.#input = this.renderRoot.querySelector("input")!;
-    this.#syncFormValue();
-    this.#syncSelected();
-    this.#syncValidity();
+    this.#core = new OptionListController(this, this.#internals, {
+      onChange: () => this.requestUpdate(),
+      listbox: () => this.renderRoot.querySelector<HTMLElement>("#listbox"),
+      anchor: () => this.#input,
+      focusControl: () => this.#input?.focus(),
+      // Preview the keyboard-highlighted option's label in the input — single
+      // mode only (in multi mode the input stays a free-form search box).
+      onActiveKeyNav: (option) => {
+        if (!this.multiple) this.#input.value = option.label;
+      },
+      onClose: () => this.#settleInput(),
+      onAfterToggle: (option) => this.#afterToggle(option),
+      onFormReset: () => {
+        if (this.#input) this.#input.value = "";
+      },
+      onFormRestore: (state) => {
+        if (this.#input) {
+          this.#input.value = this.#core.selectedOption?.label ?? state;
+        }
+      },
+    });
+    this.#core.syncFormValue();
+    this.#core.syncSelected();
+    this.#core.syncValidity();
     if (!this.multiple) {
-      this.#input.value = this.#selectedOption?.label ?? this.value;
+      this.#input.value = this.#core.selectedOption?.label ?? this.value;
     }
     this.#popupLayout = trackPopupLayout({
       getHostElement: () => this,
@@ -140,21 +144,7 @@ export class Combobox extends LitElement {
   }
 
   protected updated(changed: PropertyValues<this>) {
-    if (changed.has("value") || changed.has("values")) {
-      this.#syncFormValue();
-      this.#syncSelected();
-      this.#syncValidity();
-    }
-    // In multiple mode, #syncFormValue bakes `name` into the FormData it
-    // builds (buildMultiFormData) — re-run it if `name` changes on its own
-    // (e.g. set dynamically after mount), or the submitted field name would
-    // stay stuck at whatever it was during the last value/values change.
-    if (changed.has("name")) {
-      this.#syncFormValue();
-    }
-    if (changed.has("required")) {
-      this.#syncValidity();
-    }
+    this.#core.hostUpdated(changed);
     // Called on every render pass, not gated on `open` — the popup's
     // visibility can flip without `open` itself changing on that particular
     // render (see autocomplete-core.ts's afterRender for why relying on a
@@ -171,60 +161,9 @@ export class Combobox extends LitElement {
     return [...this.querySelectorAll<Option>("ui-option")];
   }
 
-  #visibleOptions(): Option[] {
-    return this.#options().filter(
-      (option) => !option.disabled && !option.hidden,
-    );
-  }
-
-  get #selectedOption(): Option | undefined {
-    return this.#options().find((option) => option.value === this.value);
-  }
-
-  get #activeOption(): Option | undefined {
-    return this.#visibleOptions()[this.activeIndex];
-  }
-
   #onSlotChange() {
-    this.#syncSelected();
+    this.#core?.syncSelected();
     this.#applyFilter(this.query);
-  }
-
-  #syncFormValue() {
-    if (this.disabled) {
-      this.#internals.setFormValue(null);
-      return;
-    }
-    if (this.multiple) {
-      this.#internals.setFormValue(buildMultiFormData(this.name, this.values));
-    } else {
-      this.#internals.setFormValue(this.value || null);
-    }
-  }
-
-  #syncValidity() {
-    if (!this.#input) return;
-
-    const flags: ValidityStateFlags = {};
-    let message = "";
-    const hasValue = this.multiple ? this.values.length > 0 : !!this.value;
-
-    if (this.required && !hasValue) {
-      flags.valueMissing = true;
-      message = "Please select an option.";
-    }
-
-    this.#internals.setValidity(flags, message, this.#input);
-    this.toggleAttribute("invalid", !this.#internals.validity.valid);
-  }
-
-  #syncSelected() {
-    for (const option of this.#options()) {
-      option.multiple = this.multiple;
-      option.selected = this.multiple
-        ? this.values.includes(option.value)
-        : option.value === this.value;
-    }
   }
 
   // Case-insensitive substring match against each option's plain-text label —
@@ -242,115 +181,36 @@ export class Combobox extends LitElement {
     }
   }
 
-  // `preview` mirrors the highlighted option's text into the input — only done
-  // for explicit keyboard navigation (arrow/Home/End), never while the user is
-  // typing/filtering (that would fight their own input), and never in multi mode
-  // (the input there stays a free-form search box; picks show up as pills).
-  #setActiveIndex(index: number, opts: { preview?: boolean } = {}) {
-    const previousOption = this.#activeOption;
-    for (const option of this.#options()) option.active = false;
-    if (previousOption && this.#generatedIdOptions.delete(previousOption)) {
-      previousOption.removeAttribute("id");
-    }
-    this.activeIndex = index;
-
-    const option = this.#visibleOptions()[index];
-    if (!option) return;
-
-    if (!option.id) {
-      option.id = `ui-combobox-option-${instanceId}-${++nextOptionId}`;
-      this.#generatedIdOptions.add(option);
-    }
-    option.active = true;
-    if (opts.preview && !this.multiple) {
-      this.#input.value = option.label;
-    }
-    const listbox = this.renderRoot.querySelector<HTMLElement>("#listbox");
-    if (listbox) scrollIntoListboxView(listbox, option);
-  }
-
-  #openList() {
-    if (this.open || this.disabled) return;
-    this.open = true;
-    const options = this.#visibleOptions();
-    const selectedIndex = this.multiple
-      ? -1
-      : options.findIndex((option) => option.value === this.value);
-    this.#setActiveIndex(options.length === 0 ? -1 : Math.max(selectedIndex, 0));
-  }
-
-  // `revertText` discards any typed-but-not-picked filter text, restoring the
-  // input to its resting state (the selected label, or blank in multi mode) —
-  // skipped by #pick, which has already put the right text in place itself.
-  #closeList(revertText = true) {
-    if (!this.open) return;
-    this.open = false;
-    this.#setActiveIndex(-1);
+  // On close (Escape/blur/chevron, or as part of a single pick): drop any
+  // typed-but-not-picked filter text and reset the input to its resting state.
+  #settleInput() {
     this.query = "";
     this.#applyFilter("");
-    if (revertText) {
-      this.#input.value = this.multiple
-        ? ""
-        : (this.#selectedOption?.label ?? this.value);
-    }
+    this.#input.value = this.multiple
+      ? ""
+      : (this.#core.selectedOption?.label ?? this.value);
   }
 
-  #moveActive(delta: number) {
-    const options = this.#visibleOptions();
-    if (options.length === 0) return;
-    const next = Math.min(Math.max(this.activeIndex + delta, 0), options.length - 1);
-    this.#setActiveIndex(next, { preview: true });
-  }
-
-  #selectActive() {
-    const option = this.#activeOption;
-    if (!option) return;
-    if (this.multiple) this.#toggle(option);
-    else this.#pick(option);
-  }
-
-  #pick(option: Option) {
-    const changed = this.value !== option.value;
-    this.value = option.value;
-    this.#input.value = option.label;
-    this.#closeList(false);
-    this.#input.focus();
-    if (changed) {
-      this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-    }
-  }
-
-  // Toggles the pick, clears the search text/filter so the full list is visible
-  // again for the next pick, and keeps the popup open — same shape as
-  // ui-autocomplete's multi mode.
-  #toggle(option: Option) {
-    this.values = togglePillValue(this.values, option.value);
+  // After a multi-select toggle: clear the search text/filter so the full list
+  // is visible for the next pick, keeping the active option on the one just
+  // toggled (still on-screen) rather than snapping back to the top.
+  #afterToggle(option: OptionListItem) {
     this.#input.value = "";
     this.query = "";
     this.#applyFilter("");
-    // Re-finds `option` itself in the now-unfiltered list, rather than always
-    // snapping to index 0 — clearing the filter can reshuffle where things
-    // land, so activeIndex still needs re-resolving against the new list,
-    // but keeping it on the option just toggled (already on-screen, since
-    // that's what was just clicked/activated) is what keeps
-    // scrollIntoListboxView below a no-op instead of yanking the listbox's
-    // scroll position back to wherever index 0 happens to be.
-    const options = this.#visibleOptions();
+    const options = this.#core.visibleOptions();
     const index = options.indexOf(option);
-    this.#setActiveIndex(index === -1 ? (options.length === 0 ? -1 : 0) : index);
+    this.#core.setActive(index === -1 ? options[0] : options[index]);
     this.#input.focus();
-    this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
   }
 
   // The "creatable" escape hatch for allow-custom-value: commits whatever text
   // is currently typed as the value itself, bypassing the <ui-option> lookup
   // entirely since no option backs it. Callers only invoke this once they've
-  // already checked allowCustomValue and that the query is non-empty — mirrors
-  // #pick/#toggle's own closing/reset shape, just without an Option to read.
+  // already checked allowCustomValue and that the query is non-empty.
   // `closeList` is false from Enter (multi mode keeps the popup open for the
-  // next tag, same as #toggle) but true from blur — focus has already left,
-  // so leaving the popup open behind it would strand a dropdown nothing is
-  // driving.
+  // next tag) but true from blur — focus has already left, so leaving the popup
+  // open behind it would strand a dropdown nothing is driving.
   #commitCustomValue(opts: { closeList?: boolean } = {}) {
     const text = this.query.trim();
     if (this.multiple) {
@@ -362,18 +222,17 @@ export class Combobox extends LitElement {
       }
       this.#input.value = "";
       if (opts.closeList) {
-        this.#closeList(false);
+        this.#core.closeList();
       } else {
         this.query = "";
         this.#applyFilter("");
-        const options = this.#visibleOptions();
-        this.#setActiveIndex(options.length === 0 ? -1 : 0);
+        this.#core.setActive(this.#core.visibleOptions()[0]);
       }
     } else {
       const changed = this.value !== text;
       this.value = text;
       this.#input.value = text;
-      this.#closeList(false);
+      this.#core.closeList();
       if (changed) {
         this.dispatchEvent(
           new Event("change", { bubbles: true, composed: true }),
@@ -384,74 +243,44 @@ export class Combobox extends LitElement {
 
   #removePill(value: string, event: Event) {
     event.preventDefault();
-    this.values = removePillValue(this.values, value);
-    this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+    this.#core.removeValue(value);
   }
 
   #onInput() {
     this.query = this.#input.value;
     this.#applyFilter(this.query);
-    if (!this.open) this.open = true;
-    const options = this.#visibleOptions();
-    this.#setActiveIndex(options.length === 0 ? -1 : 0);
+    if (!this.#core.open) this.#core.setOpen(true);
+    // Highlight the first match (or nothing) — not the current pick, unlike a
+    // plain open — since the user is actively narrowing the list.
+    this.#core.setActive(this.#core.visibleOptions()[0]);
   }
 
   #onInputFocus() {
-    this.#openList();
+    this.#core.openList();
   }
 
   #onInputClick() {
-    this.#openList();
+    this.#core.openList();
   }
 
   #onInputKeydown(event: KeyboardEvent) {
+    if (this.#core.handleNavKey(event)) return;
     switch (event.key) {
-      case "ArrowDown":
-        event.preventDefault();
-        if (this.open) this.#moveActive(1);
-        else this.#openList();
-        break;
-      case "ArrowUp":
-        event.preventDefault();
-        if (this.open) this.#moveActive(-1);
-        else this.#openList();
-        break;
-      case "Home":
-        if (this.open) {
-          event.preventDefault();
-          this.#setActiveIndex(0, { preview: true });
-        }
-        break;
-      case "End":
-        if (this.open) {
-          event.preventDefault();
-          this.#setActiveIndex(this.#visibleOptions().length - 1, {
-            preview: true,
-          });
-        }
-        break;
       case "Enter":
         event.preventDefault();
-        if (this.open) {
-          if (this.#activeOption) this.#selectActive();
+        if (this.#core.open) {
+          if (this.#core.activeOption) this.#core.commitActive();
           else if (this.allowCustomValue && this.query.trim())
             this.#commitCustomValue();
         } else {
-          this.#openList();
-        }
-        break;
-      case "Escape":
-        if (this.open) {
-          event.preventDefault();
-          this.#closeList();
+          this.#core.openList();
         }
         break;
       case "Tab":
         // No explicit close here — Tab also fires the native blur this input
         // is about to lose, and #onInputBlur already decides whether to
-        // commit or revert; a direct #closeList() here would revert first
-        // and beat it to the punch, so allow-custom-value could never commit
-        // on tab-out.
+        // commit or revert; a direct close here would revert first and beat
+        // it to the punch, so allow-custom-value could never commit on tab-out.
         break;
       default:
         break;
@@ -462,34 +291,18 @@ export class Combobox extends LitElement {
     if (this.allowCustomValue && this.query.trim()) {
       this.#commitCustomValue({ closeList: true });
     } else {
-      this.#closeList();
+      this.#core.closeList();
     }
-  }
-
-  #onListboxClick(event: Event) {
-    const option = (event.target as Element).closest(
-      "ui-option",
-    ) as Option | null;
-    if (!option || option.disabled || option.hidden) return;
-    if (this.multiple) this.#toggle(option);
-    else this.#pick(option);
-  }
-
-  // Keeps focus on the input through a listbox click rather than letting it blur
-  // (which would close the popup, via #onInputBlur, before the click that picks
-  // from it lands) — same technique as ui-select/ui-autocomplete use.
-  #onListboxPointerDown(event: Event) {
-    event.preventDefault();
   }
 
   // Same toggle affordance as ui-select's trigger chevron.
   #onChevronClick() {
     if (this.disabled) return;
-    if (this.open) {
-      this.#closeList();
+    if (this.#core.open) {
+      this.#core.closeList();
     } else {
       this.#input.focus();
-      this.#openList();
+      this.#core.openList();
     }
   }
 
@@ -502,10 +315,7 @@ export class Combobox extends LitElement {
   }
 
   formResetCallback() {
-    this.value = "";
-    this.values = [];
-    if (this.#input) this.#input.value = "";
-    this.#syncFormValue();
+    this.#core.formResetCallback();
   }
 
   formDisabledCallback(disabled: boolean) {
@@ -513,18 +323,7 @@ export class Combobox extends LitElement {
   }
 
   formStateRestoreCallback(state: string | File | FormData | null) {
-    if (this.multiple) {
-      if (state instanceof FormData) {
-        this.values = state.getAll(this.name).map(String);
-      }
-      return;
-    }
-    if (typeof state === "string") {
-      this.value = state;
-      if (this.#input) {
-        this.#input.value = this.#selectedOption?.label ?? state;
-      }
-    }
+    this.#core.formStateRestoreCallback(state);
   }
 
   checkValidity() {
@@ -536,23 +335,21 @@ export class Combobox extends LitElement {
   }
 
   setCustomValidity(message: string) {
-    if (message) {
-      this.#internals.setValidity({ customError: true }, message, this.#input);
-    } else {
-      this.#syncValidity();
-    }
+    this.#core.setCustomValidity(message);
   }
 
   render() {
+    const optionEls = this.#options();
     const pills = this.multiple
       ? this.values.map((value) => ({
           value,
-          label: this.#options().find((o) => o.value === value)?.label ?? value,
+          label: optionEls.find((o) => o.value === value)?.label ?? value,
         }))
       : [];
-    const showListbox = this.open && this.#visibleOptions().length > 0;
-    const showNoMatches =
-      this.open && this.query && this.#visibleOptions().length === 0;
+    const open = this.#core?.open ?? false;
+    const visibleCount = this.#core?.visibleOptions().length ?? 0;
+    const showListbox = open && visibleCount > 0;
+    const showNoMatches = open && !!this.query && visibleCount === 0;
     const popupVisible = showListbox || showNoMatches;
 
     return html`
@@ -571,9 +368,9 @@ export class Combobox extends LitElement {
             type="text"
             role="combobox"
             aria-autocomplete="list"
-            aria-expanded=${this.open}
+            aria-expanded=${open}
             aria-controls="listbox"
-            aria-activedescendant=${this.#activeOption?.id ?? nothing}
+            aria-activedescendant=${this.#core?.activeOption?.id ?? nothing}
             name=${this.name}
             placeholder=${this.placeholder}
             autocomplete="off"
@@ -591,7 +388,7 @@ export class Combobox extends LitElement {
           class="chevron"
           @pointerdown=${(event: Event) => event.preventDefault()}
           @click=${() => this.#onChevronClick()}
-          ><span class="chevron-icon ${this.open ? "chevron-open" : ""}"
+          ><span class="chevron-icon ${open ? "chevron-open" : ""}"
             >${chevronDownIcon}</span
           ></span
         >
@@ -602,8 +399,8 @@ export class Combobox extends LitElement {
             class="listbox"
             aria-multiselectable=${this.multiple}
             ?hidden=${!showListbox}
-            @click=${(event: Event) => this.#onListboxClick(event)}
-            @pointerdown=${(event: Event) => this.#onListboxPointerDown(event)}
+            @click=${(event: Event) => this.#core.handleListboxClick(event)}
+            @pointerdown=${(event: Event) => event.preventDefault()}
           >
             <slot @slotchange=${() => this.#onSlotChange()}></slot>
           </div>

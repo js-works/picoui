@@ -6,7 +6,16 @@
 
 import { html, nothing, css, type TemplateResult } from "lit";
 
-export { renderPills, togglePillValue, removePillValue, buildMultiFormData, pillsStyles };
+import {
+  togglePillValue,
+  removePillValue,
+  buildMultiFormData,
+} from "./pill-values.js";
+
+export { renderPills, pillsStyles };
+// Re-exported from the Lit-free pill-values.ts so existing callers can keep
+// importing the value helpers and the renderer from one place.
+export { togglePillValue, removePillValue, buildMultiFormData };
 
 // Renders one pill per entry, each with its own remove button. Callers
 // decide whether to call this at all (typically gated on their own
@@ -46,31 +55,6 @@ function renderPills(
         +${hidden.length}
       </span>`
     : nothing}`;
-}
-
-// Add-or-remove membership — used when picking from the list (toggling a
-// pick on/off), as opposed to removePillValue's unconditional removal (used
-// by the pill's own remove button).
-function togglePillValue(
-  values: readonly string[],
-  value: string,
-): string[] {
-  return values.includes(value)
-    ? values.filter((v) => v !== value)
-    : [...values, value];
-}
-
-function removePillValue(values: readonly string[], value: string): string[] {
-  return values.filter((v) => v !== value);
-}
-
-// One FormData entry per selected value, all under the same field `name` —
-// the browser folds repeated entries into the parent form's submission the
-// same way a native `<select multiple>` would.
-function buildMultiFormData(name: string, values: readonly string[]): FormData {
-  const formData = new FormData();
-  for (const value of values) formData.append(name, value);
-  return formData;
 }
 
 // The pill's own look — identical regardless of which element hosts it
