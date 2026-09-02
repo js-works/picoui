@@ -12,7 +12,10 @@ import "../main/components/radio/radio-group.js";
 import "../main/components/button/button.js";
 import type { Button } from "../main/components/button/button.js";
 import "../main/components/menu-button/menu-button.js";
-import type { MenuEntry, MenuSelectDetail } from "../main/components/menu-button/menu-button.js";
+import type {
+  MenuEntry,
+  MenuSelectDetail,
+} from "../main/components/menu-button/menu-button.js";
 import "../main/components/split-button/split-button.js";
 import "../main/components/select/select.js";
 import type { Select } from "../main/components/select/select.js";
@@ -29,7 +32,10 @@ import type {
   DataGridRowDetails,
   DataGridRowAction,
 } from "../main/components/datagrid/datagrid.js";
-import { textFilter, selectFilter } from "../main/components/datagrid/filters.js";
+import {
+  textFilter,
+  selectFilter,
+} from "../main/components/datagrid/filters.js";
 import "../main/components/text-field/text-field.js";
 import "../main/components/textarea/textarea.js";
 import "../main/components/number-field/number-field.js";
@@ -41,6 +47,7 @@ import type {
   DateFieldSelectionMode,
 } from "../main/components/date-field/date-field.js";
 import "../main/components/native-date-field/native-date-field.js";
+import "../uu/index.js";
 import "../main/components/date-picker/date-picker.js";
 import type {
   DatePicker,
@@ -347,9 +354,9 @@ const employeeRowDetails: DataGridRowDetails<Employee> = (employee) =>
   employee.department === "Engineering"
     ? html`
         <p>
-          <strong>${employee.name}</strong> — additional detail shown only
-          for Engineering rows, to demonstrate a mixed page (rows without
-          any get no expander at all).
+          <strong>${employee.name}</strong> — additional detail shown only for
+          Engineering rows, to demonstrate a mixed page (rows without any get no
+          expander at all).
         </p>
       `
     : undefined;
@@ -453,13 +460,10 @@ function typographyTab() {
     <section>
       <h2>Heading</h2>
       <p>
-        <code>level</code> (1–6) alone already picks a sensible default
-        size — the same way a bare <code>&lt;h1&gt;</code>…<code
-          >&lt;h6&gt;</code
-        >
-        would. <code>role="heading"</code>/<code>aria-level</code> reproduce
-        the document-outline semantics a real heading tag would give for
-        free.
+        <code>level</code> (1–6) alone already picks a sensible default size —
+        the same way a bare <code>&lt;h1&gt;</code>…<code>&lt;h6&gt;</code>
+        would. <code>role="heading"</code>/<code>aria-level</code> reproduce the
+        document-outline semantics a real heading tag would give for free.
       </p>
       <div class="row" style="flex-direction: column; align-items: stretch;">
         <ui-heading level="1">Heading level 1</ui-heading>
@@ -484,7 +488,9 @@ function typographyTab() {
         <ui-heading level="3" tone="warning">Warning heading</ui-heading>
         <ui-heading level="3" tone="success">Success heading</ui-heading>
       </div>
-      <p><code>truncate</code> — a single line, ellipsized rather than wrapping.</p>
+      <p>
+        <code>truncate</code> — a single line, ellipsized rather than wrapping.
+      </p>
       <div class="row" style="width: 20em;">
         <ui-heading level="3" truncate style="width: 100%">
           A heading with far too much text to fit on one line at this width
@@ -501,20 +507,20 @@ function typographyTab() {
       </p>
       <div class="row" style="flex-direction: column; align-items: stretch;">
         <ui-text as="p">
-          A paragraph of body copy, rendered block-level with its own
-          trailing spacing (<code>as="p"</code>) so a second paragraph right
-          after it doesn't run straight into it.
+          A paragraph of body copy, rendered block-level with its own trailing
+          spacing (<code>as="p"</code>) so a second paragraph right after it
+          doesn't run straight into it.
         </ui-text>
-        <ui-text as="p">
-          A second paragraph, to show that spacing.
-        </ui-text>
+        <ui-text as="p"> A second paragraph, to show that spacing. </ui-text>
       </div>
       <p>
-        <code>size</code>/<code>weight</code>/<code>tone</code> — same scales
-        as everywhere else in this library.
+        <code>size</code>/<code>weight</code>/<code>tone</code> — same scales as
+        everywhere else in this library.
       </p>
       <div class="row" style="flex-direction: column; align-items: stretch;">
-        <ui-text size="small" tone="neutral">Small helper text under a field.</ui-text>
+        <ui-text size="small" tone="neutral"
+          >Small helper text under a field.</ui-text
+        >
         <ui-text weight="semibold">Semibold emphasis.</ui-text>
         <ui-text tone="danger">Something went wrong.</ui-text>
         <ui-text tone="success">Saved successfully.</ui-text>
@@ -526,7 +532,10 @@ function typographyTab() {
       <div class="row">
         <ui-text muted>Optional — leave blank to skip this step.</ui-text>
       </div>
-      <p><code>truncate</code> (single line) and <code>clamp</code> (a fixed number of lines).</p>
+      <p>
+        <code>truncate</code> (single line) and <code>clamp</code> (a fixed
+        number of lines).
+      </p>
       <div class="row" style="width: 20em;">
         <ui-text as="div" truncate style="width: 100%">
           This line of text is far too long to fit in twenty characters of
@@ -536,8 +545,8 @@ function typographyTab() {
       <div class="row" style="width: 20em;">
         <ui-text as="div" clamp="2">
           This description runs long enough to wrap past two lines, at which
-          point the third line and beyond are clipped with a trailing
-          ellipsis instead of pushing the layout around it taller and taller.
+          point the third line and beyond are clipped with a trailing ellipsis
+          instead of pushing the layout around it taller and taller.
         </ui-text>
       </div>
     </section>
@@ -547,15 +556,14 @@ function typographyTab() {
       <p>
         Wraps a real <code>&lt;a&gt;</code> — focus, keyboard activation, and
         middle-click/ctrl-click-to-open-in-new-tab all come from the native
-        element. <code>tone</code> defaults to <code>"primary"</code>
-        (unlike <code>ui-heading</code>/<code>ui-text</code>, which default to
+        element. <code>tone</code> defaults to <code>"primary"</code> (unlike
+        <code>ui-heading</code>/<code>ui-text</code>, which default to
         <code>"neutral"</code>) — a bare link should already read as a link.
       </p>
       <div class="row">
         <ui-text as="p">
-          Read the <ui-link href="https://lit.dev" target="_blank">
-            Lit docs
-          </ui-link>
+          Read the
+          <ui-link href="https://lit.dev" target="_blank"> Lit docs </ui-link>
           for more, or
           <ui-link href="#" tone="danger">delete your account</ui-link>
           instead.
@@ -637,8 +645,8 @@ function buttonsTab() {
       <h2>Menu button</h2>
       <p>
         Drill-down menu — picking "Share" or "Export as" slides to that
-        submenu's own page (with a back button) instead of cascading a
-        flyout beside it; "Export as" > JSON is disabled.
+        submenu's own page (with a back button) instead of cascading a flyout
+        beside it; "Export as" > JSON is disabled.
       </p>
       <div class="row">
         <ui-menu-button
@@ -669,13 +677,25 @@ function buttonsTab() {
         </ui-menu-button>
       </div>
       <div class="row">
-        <ui-menu-button size="small" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-menu-button
+          size="small"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Small
         </ui-menu-button>
-        <ui-menu-button size="medium" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-menu-button
+          size="medium"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Medium
         </ui-menu-button>
-        <ui-menu-button size="large" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-menu-button
+          size="large"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Large
         </ui-menu-button>
       </div>
@@ -685,8 +705,8 @@ function buttonsTab() {
       <h2>Split button</h2>
       <p>
         The left segment is a plain button (its own click event); the right,
-        chevron-only segment opens the same drill-down menu as
-        ui-menu-button above.
+        chevron-only segment opens the same drill-down menu as ui-menu-button
+        above.
       </p>
       <div class="row">
         <ui-split-button
@@ -712,13 +732,25 @@ function buttonsTab() {
         </ui-split-button>
       </div>
       <div class="row">
-        <ui-split-button size="small" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-split-button
+          size="small"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Small
         </ui-split-button>
-        <ui-split-button size="medium" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-split-button
+          size="medium"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Medium
         </ui-split-button>
-        <ui-split-button size="large" .items=${SAMPLE_MENU_ITEMS} @menu-select=${onSelect}>
+        <ui-split-button
+          size="large"
+          .items=${SAMPLE_MENU_ITEMS}
+          @menu-select=${onSelect}
+        >
           Large
         </ui-split-button>
       </div>
@@ -887,7 +919,10 @@ function inputFieldsTab() {
     <section>
       <h2>Email field</h2>
       <div class="row">
-        <ui-email-field label="Email address" placeholder="you@example.com"></ui-email-field>
+        <ui-email-field
+          label="Email address"
+          placeholder="you@example.com"
+        ></ui-email-field>
       </div>
       <div class="row">
         <ui-email-field size="small" label="Small"></ui-email-field>
@@ -897,6 +932,251 @@ function inputFieldsTab() {
       </div>
       <div class="row">
         <ui-email-field required label="Email address"></ui-email-field>
+      </div>
+    </section>
+  `;
+}
+
+// Experimental field family (src/uu/) — same visuals as the ui-* input
+// fields above, rebuilt on the shared FormControlElement → FieldElement base,
+// plus the info-text/error-text message row every field gets from the base.
+function uuFieldsTab() {
+  return html`
+    <section>
+      <h2>uu-text-field</h2>
+      <div class="row">
+        <uu-text-field label="Full name"></uu-text-field>
+      </div>
+      <div class="row">
+        <uu-text-field size="small" label="Small"></uu-text-field>
+        <uu-text-field size="medium" label="Medium"></uu-text-field>
+        <uu-text-field size="large" label="Large"></uu-text-field>
+        <uu-text-field disabled label="Disabled"></uu-text-field>
+      </div>
+      <div class="row">
+        <uu-text-field
+          required
+          minlength="3"
+          maxlength="20"
+          label="Username"
+          placeholder="3-20 characters"
+          info-text="Letters, numbers and dashes only."
+        ></uu-text-field>
+        <uu-text-field
+          label="Card number"
+          value="abc"
+          error-text="That doesn't look like a card number."
+        ></uu-text-field>
+        <uu-text-field
+          readonly
+          label="Account ID"
+          value="acct_9f3c1"
+          info-text="Read-only — still submitted with the form."
+        ></uu-text-field>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-number-field</h2>
+      <div class="row">
+        <uu-number-field label="Quantity"></uu-number-field>
+        <uu-number-field
+          label="Amount"
+          min="0"
+          max="10"
+          step="1"
+          value="5"
+          info-text="Between 0 and 10."
+        ></uu-number-field>
+        <uu-number-field
+          centered
+          hide-stepper
+          label="Go to page"
+          value="1"
+        ></uu-number-field>
+        <uu-number-field
+          readonly
+          label="Seats (read-only)"
+          value="4"
+        ></uu-number-field>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-password-field</h2>
+      <div class="row">
+        <uu-password-field label="Password"></uu-password-field>
+        <uu-password-field
+          required
+          minlength="8"
+          label="Password"
+          placeholder="At least 8 characters"
+          info-text="Use a passphrase you don't use elsewhere."
+        ></uu-password-field>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-email-field</h2>
+      <div class="row">
+        <uu-email-field
+          label="Email address"
+          placeholder="you@example.com"
+        ></uu-email-field>
+        <uu-email-field
+          required
+          label="Email address"
+          value="not-an-email"
+        ></uu-email-field>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-date-field</h2>
+      <p>
+        Editable text (ISO — <code>YYYY-MM-DD</code>) plus a calendar button;
+        ArrowDown in the field also opens the picker.
+      </p>
+      <div class="row">
+        <uu-date-field label="Date"></uu-date-field>
+        <uu-date-field
+          selection-mode="dateTime"
+          label="Date &amp; time"
+        ></uu-date-field>
+      </div>
+      <div class="row">
+        <uu-date-field
+          required
+          min="2026-01-01"
+          max="2026-12-31"
+          label="Date of birth"
+          info-text="Must fall within 2026."
+        ></uu-date-field>
+        <uu-date-field
+          readonly
+          value="2026-09-02"
+          label="Booked (read-only)"
+        ></uu-date-field>
+        <uu-date-field disabled label="Disabled"></uu-date-field>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-select</h2>
+      <div class="row">
+        <uu-select label="Fruit" placeholder="Pick one">
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="banana">Banana</uu-option>
+          <uu-option-group label="Citrus">
+            <uu-option value="orange">Orange</uu-option>
+            <uu-option value="lemon">Lemon</uu-option>
+          </uu-option-group>
+          <uu-option value="grape" disabled>Grape (out of stock)</uu-option>
+        </uu-select>
+        <uu-select size="small" label="Small">
+          <uu-option value="a">Option A</uu-option>
+          <uu-option value="b">Option B</uu-option>
+        </uu-select>
+        <uu-select disabled label="Disabled">
+          <uu-option value="a">Option A</uu-option>
+        </uu-select>
+      </div>
+      <div class="row">
+        <uu-select
+          multiple
+          max-options-visible="2"
+          label="Fruits"
+          info-text="Choose as many as you like."
+        >
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="banana">Banana</uu-option>
+          <uu-option value="orange">Orange</uu-option>
+          <uu-option value="lemon">Lemon</uu-option>
+        </uu-select>
+        <uu-select
+          required
+          label="Required"
+          error-text="Please choose a fruit."
+        >
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="banana">Banana</uu-option>
+        </uu-select>
+      </div>
+      <div class="row">
+        <uu-select inline label="Fruit (inline)">
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="banana">Banana</uu-option>
+          <uu-option value="orange">Orange</uu-option>
+        </uu-select>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-combobox</h2>
+      <div class="row">
+        <uu-combobox label="Fruit" placeholder="Type to filter…">
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="apricot">Apricot</uu-option>
+          <uu-option-group label="Citrus">
+            <uu-option value="orange">Orange</uu-option>
+            <uu-option value="lemon">Lemon</uu-option>
+            <uu-option value="lime">Lime</uu-option>
+          </uu-option-group>
+          <uu-option value="banana">Banana</uu-option>
+        </uu-combobox>
+        <uu-combobox
+          allow-custom-value
+          label="Tag"
+          placeholder="Pick or type a new one"
+        >
+          <uu-option value="bug">Bug</uu-option>
+          <uu-option value="feature">Feature</uu-option>
+          <uu-option value="chore">Chore</uu-option>
+        </uu-combobox>
+      </div>
+      <div class="row">
+        <uu-combobox
+          multiple
+          max-options-visible="3"
+          label="Fruits"
+          placeholder="Filter…"
+          info-text="Type to narrow, click to add."
+        >
+          <uu-option value="apple">Apple</uu-option>
+          <uu-option value="banana">Banana</uu-option>
+          <uu-option value="orange">Orange</uu-option>
+          <uu-option value="lemon">Lemon</uu-option>
+          <uu-option value="grape">Grape</uu-option>
+        </uu-combobox>
+        <uu-combobox size="small" label="Small">
+          <uu-option value="a">Alpha</uu-option>
+          <uu-option value="b">Beta</uu-option>
+        </uu-combobox>
+      </div>
+    </section>
+
+    <section>
+      <h2>uu-autocomplete</h2>
+      <div class="row">
+        <uu-autocomplete
+          label="Fruit"
+          placeholder="Search fruits…"
+          .dataSource=${localFilter(FRUITS, 1000)}
+        ></uu-autocomplete>
+        <uu-autocomplete
+          multiple
+          label="Fruits"
+          placeholder="Search fruits…"
+          info-text="Server-backed (simulated 1s latency)."
+          .dataSource=${localFilter(FRUITS, 1000)}
+        ></uu-autocomplete>
+      </div>
+      <div class="row">
+        <uu-autocomplete
+          size="small"
+          label="Small"
+          .dataSource=${localFilter(FRUITS, 1000)}
+        ></uu-autocomplete>
       </div>
     </section>
   `;
@@ -918,7 +1198,10 @@ function nativeDateFieldTab() {
       </div>
       <div class="row">
         <ui-native-date-field size="small" label="Small"></ui-native-date-field>
-        <ui-native-date-field size="medium" label="Medium"></ui-native-date-field>
+        <ui-native-date-field
+          size="medium"
+          label="Medium"
+        ></ui-native-date-field>
         <ui-native-date-field size="large" label="Large"></ui-native-date-field>
         <ui-native-date-field disabled label="Disabled"></ui-native-date-field>
       </div>
@@ -949,7 +1232,14 @@ let dateFieldsLocale = "en-US";
 // page can show what's actually stored next to the formatted display.
 const dateFieldValues: Record<string, string> = {};
 
-const DATE_FIELD_LOCALES = ["en-US", "en-GB", "es-ES", "fr-FR", "de-DE", "it-IT"];
+const DATE_FIELD_LOCALES = [
+  "en-US",
+  "en-GB",
+  "es-ES",
+  "fr-FR",
+  "de-DE",
+  "it-IT",
+];
 
 interface DateFieldDemo {
   mode: DateFieldSelectionMode;
@@ -988,7 +1278,12 @@ const DATE_FIELD_DEMOS: DateFieldDemo[] = [
   },
   { mode: "time", label: "Time", placeholder: "Pick a time", minuteStep: 5 },
   { mode: "timeRange", label: "Time range", placeholder: "Pick a time range" },
-  { mode: "week", label: "Week", placeholder: "Pick a week", weekNumbers: true },
+  {
+    mode: "week",
+    label: "Week",
+    placeholder: "Pick a week",
+    weekNumbers: true,
+  },
   {
     mode: "weekRange",
     label: "Week range",
@@ -996,7 +1291,11 @@ const DATE_FIELD_DEMOS: DateFieldDemo[] = [
     weekNumbers: true,
   },
   { mode: "month", label: "Month", placeholder: "Pick a month" },
-  { mode: "monthRange", label: "Month range", placeholder: "Pick a month range" },
+  {
+    mode: "monthRange",
+    label: "Month range",
+    placeholder: "Pick a month range",
+  },
   { mode: "quarter", label: "Quarter", placeholder: "Pick a quarter" },
   {
     mode: "quarterRange",
@@ -1034,9 +1333,9 @@ function dateFieldsTab() {
         <code>2026-08-01,2026-08-09</code>, …) — that's what a form submits. The
         text you see is that value run through <code>Intl</code> for the field's
         language, so switching Locale below reformats every field in place
-        without touching what's stored. The popup commits on <strong>OK</strong>,
-        so picking the second half of a range never churns the field through a
-        half-selected state.
+        without touching what's stored. The popup commits on
+        <strong>OK</strong>, so picking the second half of a range never churns
+        the field through a half-selected state.
       </p>
       <div class="date-fields-locale">
         <ui-select
@@ -1244,8 +1543,8 @@ function uploadTab() {
     <section>
       <h2>Upload</h2>
       <p>
-        Files ride along in the enclosing form's <code>FormData</code>, same
-        as a native <code>&lt;input type="file"&gt;</code> — no network calls
+        Files ride along in the enclosing form's <code>FormData</code>, same as
+        a native <code>&lt;input type="file"&gt;</code> — no network calls
         happen inside the component itself.
         <code>setFileProgress</code>/<code>setFileDone</code>/<code
           >setFileError</code
@@ -1350,11 +1649,7 @@ function selectionTab() {
         </ui-select>
       </div>
       <div class="row">
-        <ui-select
-          multiple
-          max-options-visible="2"
-          label="Fruits"
-        >
+        <ui-select multiple max-options-visible="2" label="Fruits">
           <ui-option value="apple">Apple</ui-option>
           <ui-option value="banana">Banana</ui-option>
           <ui-option-group label="Citrus">
@@ -1479,7 +1774,9 @@ function dataGridFlatTab() {
         page-size="50"
         selection-mode="multi"
         selection-tone="primary"
-        @row-selection-change=${(event: CustomEvent<{ selected: Employee[] }>) =>
+        @row-selection-change=${(
+          event: CustomEvent<{ selected: Employee[] }>,
+        ) =>
           console.log(
             "Selected:",
             event.detail.selected.map((employee) => employee.name),
@@ -1506,7 +1803,9 @@ function dataGridGroupedTab() {
         selection-mode="multi"
         selection-tone="primary"
         stripes
-        @row-selection-change=${(event: CustomEvent<{ selected: Employee[] }>) =>
+        @row-selection-change=${(
+          event: CustomEvent<{ selected: Employee[] }>,
+        ) =>
           console.log(
             "Selected:",
             event.detail.selected.map((employee) => employee.name),
@@ -1695,8 +1994,10 @@ function datePickerTab() {
           <p class="picker-demo-selection">
             <code>value</code>:
             <strong>
-              ${pickerDemo.selection.replaceAll(",", ", ") ||
-              "(nothing selected)"}
+              ${
+                pickerDemo.selection.replaceAll(",", ", ") ||
+                "(nothing selected)"
+              }
             </strong>
           </p>
         </div>
@@ -1710,7 +2011,8 @@ function datePickerTab() {
             }}
           >
             ${PICKER_LOCALES.map(
-              (locale) => html`<ui-option value=${locale}>${locale}</ui-option>`,
+              (locale) =>
+                html`<ui-option value=${locale}>${locale}</ui-option>`,
             )}
           </ui-select>
           <ui-select
@@ -1744,7 +2046,9 @@ function datePickerTab() {
             label="Minute step"
             .value=${String(pickerDemo.minuteStep)}
             @change=${(event: Event) => {
-              pickerDemo.minuteStep = Number((event.currentTarget as Select).value);
+              pickerDemo.minuteStep = Number(
+                (event.currentTarget as Select).value,
+              );
               renderApp();
             }}
           >
@@ -1756,14 +2060,16 @@ function datePickerTab() {
             )}
           </ui-select>
           ${renderPickerToggle("accentuateHeader", "accentuate header")}
-          ${DAY_BASED_MODES.includes(pickerDemo.selectionMode)
-            ? html`
-                ${renderPickerToggle("highlightCurrent", "highlight current")}
-                ${renderPickerToggle("highlightWeekends", "highlight weekends")}
-                ${renderPickerToggle("disableWeekends", "disable weekends")}
-                ${renderPickerToggle("showWeekNumbers", "show week numbers")}
-              `
-            : nothing}
+          ${
+            DAY_BASED_MODES.includes(pickerDemo.selectionMode)
+              ? html`
+                  ${renderPickerToggle("highlightCurrent", "highlight current")}
+                  ${renderPickerToggle("highlightWeekends", "highlight weekends")}
+                  ${renderPickerToggle("disableWeekends", "disable weekends")}
+                  ${renderPickerToggle("showWeekNumbers", "show week numbers")}
+                `
+              : nothing
+          }
           ${renderPickerToggle("enableCenturyView", "enable century view")}
           <div class="picker-demo-range">
             <ui-date-field
@@ -1815,6 +2121,7 @@ const demoPages: DemoPage[] = [
     content: radiosAndCheckboxesTab,
   },
   { id: "input-fields", label: "Input Fields", content: inputFieldsTab },
+  { id: "uu-fields", label: "uu-* Fields", content: uuFieldsTab },
   { id: "date-picker", label: "Date Picker", content: datePickerTab },
   { id: "date-fields", label: "Date Fields", content: dateFieldsTab },
   {
@@ -1883,7 +2190,10 @@ function renderApp(): void {
               .value=${uiScale}
               @change=${(event: Event) => {
                 uiScale = (event.currentTarget as Select).value;
-                document.documentElement.style.setProperty("--ui-scale", uiScale);
+                document.documentElement.style.setProperty(
+                  "--ui-scale",
+                  uiScale,
+                );
               }}
             >
               <ui-option value="0.75">75%</ui-option>
