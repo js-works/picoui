@@ -8,7 +8,7 @@ import type {
   FormControlRenderApi,
 } from "../base/form-control-core.js";
 import { autocompleteStyles } from "./uu-autocomplete.styles.js";
-import { checkIcon, checkSquareIcon, chevronDownIcon } from "../icons/icons.js";
+import { checkIcon, chevronDownIcon } from "../icons/icons.js";
 import { renderPills } from "../shared/pills.js";
 import { buildMultiFormData } from "../shared/pill-values.js";
 import {
@@ -219,11 +219,14 @@ function renderAutocomplete(
         />
       </div>
       <span
-        class="chevron ${v.popupVisible ? "chevron-open" : ""}"
+        class="chevron"
         @pointerdown=${(event: Event) => event.preventDefault()}
         @click=${() => handles.get(host)?.onChevronClick()}
-        >${chevronDownIcon}</span
       >
+        <span class="chevron-icon ${v.popupVisible ? "chevron-open" : ""}">
+          ${chevronDownIcon}
+        </span>
+      </span>
       <div
         id="popup"
         class="popup"
@@ -258,13 +261,7 @@ function renderAutocomplete(
                       ?.onOptionPointerDown(row.selectableIndex, event)}
                 >
                   <span class="check"
-                    >${
-                      isSelected(host, row.item)
-                        ? host.multiple
-                          ? checkSquareIcon
-                          : checkIcon
-                        : nothing
-                    }</span
+                    >${isSelected(host, row.item) ? checkIcon : nothing}</span
                   >
                   <span class="option-label">${row.item}</span>
                 </li>`,

@@ -15,11 +15,21 @@ export const optionGroupStyles = [
       display: none;
     }
 
+    /* Match the listbox's own 1px inter-row gap for the options inside a
+       group. */
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: calc(1px * var(--ui-scale));
+    }
+
     .group-label {
-      padding: var(--ui-spacing-sm) var(--ui-spacing-sm) 0;
-      font-size: var(--ui-font-size-sm);
-      font-weight: 600;
-      opacity: 0.6;
+      padding: var(--ui-spacing-md) var(--ui-spacing-md) var(--ui-spacing-sm);
+      font-size: calc(0.75rem * var(--ui-scale));
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ui-color-neutral-500);
     }
   `,
 ];

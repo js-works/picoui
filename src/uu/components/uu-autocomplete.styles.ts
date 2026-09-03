@@ -37,7 +37,7 @@ export const autocompleteStyles = [
       padding-block: var(--autocomplete-padding-block);
       box-sizing: border-box;
       border: var(--ui-border-thin) solid var(--ui-field-border-color);
-      border-radius: var(--ui-field-radius);
+      border-radius: 0.125em;
       background: var(--ui-bg);
       color: var(--ui-text);
     }
@@ -107,15 +107,33 @@ export const autocompleteStyles = [
 
     .chevron {
       flex: none;
+      align-self: stretch;
+      position: relative;
       display: flex;
       align-items: center;
-      margin-inline-end: var(--ui-spacing-md);
-      color: var(--ui-text);
+      justify-content: center;
+      padding-inline: 0.6em;
+      color: var(--ui-color-neutral-600);
       cursor: pointer;
-      transition: transform 250ms ease;
     }
 
-    .chevron-open {
+    /* The divider before the chevron — an inset overlay, not a full-height
+       border, so it sits a little short of the field's top and bottom. */
+    .chevron::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: 12%;
+      width: var(--ui-border-thin);
+      background: var(--ui-color-neutral-200);
+    }
+
+    .chevron-icon {
+      display: flex;
+      transition: transform 400ms ease;
+    }
+
+    .chevron-icon.chevron-open {
       transform: rotate(180deg);
     }
 
@@ -135,7 +153,7 @@ export const autocompleteStyles = [
       background: var(--ui-bg);
       color: var(--ui-text);
       border: var(--ui-border-thin) solid var(--ui-popup-border-color);
-      border-radius: var(--ui-radius-sm);
+      border-radius: 0.125em;
       box-shadow: var(--ui-popup-shadow);
     }
 
@@ -148,6 +166,10 @@ export const autocompleteStyles = [
       list-style: none;
       overflow-y: auto;
       box-sizing: border-box;
+      /* 1px between every row */
+      display: flex;
+      flex-direction: column;
+      gap: calc(1px * var(--ui-scale));
     }
 
     .listbox[hidden] {
@@ -157,41 +179,75 @@ export const autocompleteStyles = [
     li[role="option"] {
       display: flex;
       align-items: center;
-      gap: var(--ui-spacing-sm);
+      gap: var(--ui-spacing-md);
       box-sizing: border-box;
-      padding-block: calc(3px * var(--ui-scale));
-      padding-inline: var(--ui-spacing-sm);
-      border: var(--ui-border-thick) solid transparent;
+      padding-block: calc(5px * var(--ui-scale));
+      padding-inline: var(--ui-spacing-md);
+      /* Transparent reserved outline so activating shifts nothing; the wider
+         inline-start edge is the accent bar the active row colours in. */
+      border: var(--ui-border-thin) solid transparent;
+      border-inline-start-width: calc(4px * var(--ui-scale));
       border-radius: var(--ui-radius-sm);
       cursor: pointer;
     }
 
-    li[role="option"][aria-selected="true"] {
-      font-weight: 600;
-    }
+    /* Selected rows are marked by the checkbox/tick alone — no row fill. */
 
     li[role="option"]:hover {
-      background: var(--ui-color-neutral-100);
+      background: var(--ui-color-primary-50);
     }
 
     li[role="option"].active {
       border-color: var(--ui-color-primary-500);
-      background: transparent;
+      background: var(--ui-color-primary-50);
     }
 
     .check {
       flex: none;
-      width: 1.1em;
-      padding-inline: 0.15em;
-      box-sizing: content-box;
+      width: 1.15em;
+      height: 1.15em;
+      box-sizing: border-box;
       display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--ui-color-primary-500);
     }
 
+    .check svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    /* Multi-select: the leading slot becomes an always-visible checkbox square —
+       hollow when unpicked, filled accent with a white tick when picked. */
+    .listbox[aria-multiselectable="true"] .check {
+      border: var(--ui-border-thin) solid var(--ui-color-neutral-400);
+      border-radius: var(--ui-radius-xs);
+      color: var(--ui-color-on-accent);
+    }
+
+    .listbox[aria-multiselectable="true"]
+      li[role="option"][aria-selected="true"]
+      .check {
+      background: var(--ui-color-primary-500);
+      border-color: var(--ui-color-primary-500);
+    }
+
+    .listbox[aria-multiselectable="true"]
+      li[role="option"][aria-selected="true"]
+      .check
+      svg {
+      width: 0.85em;
+      height: 0.85em;
+    }
+
     .separator {
-      padding: var(--ui-spacing-sm) var(--ui-spacing-sm) 0;
-      font-size: var(--ui-font-size-sm);
-      opacity: 0.6;
+      padding: var(--ui-spacing-md) var(--ui-spacing-md) var(--ui-spacing-sm);
+      font-size: calc(0.75rem * var(--ui-scale));
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ui-color-neutral-500);
     }
 
     .header,

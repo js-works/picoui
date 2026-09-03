@@ -60,7 +60,7 @@ export const selectStyles = [
       padding-block: var(--select-padding-block);
       padding-inline-start: var(--select-padding-inline);
       border: var(--ui-border-thin) solid var(--ui-field-border-color);
-      border-radius: var(--ui-field-radius);
+      border-radius: 0.125em;
       background: var(--ui-bg);
       color: var(--ui-text);
       font: inherit;
@@ -116,16 +116,28 @@ export const selectStyles = [
     .chevron {
       flex: none;
       align-self: stretch;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-inline: 0.5em;
-      color: var(--ui-text);
+      padding-inline: 0.6em;
+      color: var(--ui-color-neutral-600);
+    }
+
+    /* The divider before the chevron — an inset overlay, not a full-height
+       border, so it sits a little short of the trigger's top and bottom. */
+    .chevron::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: 12%;
+      width: var(--ui-border-thin);
+      background: var(--ui-color-neutral-200);
     }
 
     .chevron-icon {
       display: flex;
-      transition: transform 250ms ease;
+      transition: transform 400ms ease;
     }
 
     .chevron-open {
@@ -139,7 +151,7 @@ export const selectStyles = [
       background: var(--ui-bg);
       color: var(--ui-text);
       border: var(--ui-border-thin) solid var(--ui-popup-border-color);
-      border-radius: var(--ui-radius-sm);
+      border-radius: 0.125em;
       box-shadow: var(--ui-popup-shadow);
     }
 
@@ -161,6 +173,10 @@ export const selectStyles = [
       padding-inline: var(--ui-spacing-sm);
       overflow-y: auto;
       box-sizing: border-box;
+      /* 1px between every row (and between groups) */
+      display: flex;
+      flex-direction: column;
+      gap: calc(1px * var(--ui-scale));
     }
 
     /* ---- inline mode: always-visible listbox, no trigger/popup ---- */

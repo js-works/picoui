@@ -241,3 +241,14 @@ h2 {
   color: var(--ui-color-neutral-600);
   overflow-wrap: anywhere;
 }
+
+/* uu-select / uu-combobox / uu-autocomplete showcases: pin every trigger to one
+   fixed width so the rows line up and an open popup (which matches the trigger
+   width) doesn't resize as its content changes. Wider than the components' own
+   12em internal min-width, so nothing overflows the declared box. */
+.row uu-select,
+.row uu-combobox,
+.row uu-autocomplete {
+  width: 18rem;
+  flex: none;
+}

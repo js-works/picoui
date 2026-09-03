@@ -49,7 +49,7 @@ export const comboboxStyles = [
       padding-block: var(--combobox-padding-block);
       box-sizing: border-box;
       border: var(--ui-border-thin) solid var(--ui-field-border-color);
-      border-radius: var(--ui-field-radius);
+      border-radius: 0.125em;
       background: var(--ui-bg);
       color: var(--ui-text);
     }
@@ -121,17 +121,29 @@ export const comboboxStyles = [
     .chevron {
       flex: none;
       align-self: stretch;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-inline: 0.5em;
-      color: var(--ui-text);
+      padding-inline: 0.6em;
+      color: var(--ui-color-neutral-600);
       cursor: pointer;
+    }
+
+    /* The divider before the chevron — an inset overlay, not a full-height
+       border, so it sits a little short of the field's top and bottom. */
+    .chevron::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: 12%;
+      width: var(--ui-border-thin);
+      background: var(--ui-color-neutral-200);
     }
 
     .chevron-icon {
       display: flex;
-      transition: transform 250ms ease;
+      transition: transform 400ms ease;
     }
 
     .chevron-icon.chevron-open {
@@ -145,7 +157,7 @@ export const comboboxStyles = [
       background: var(--ui-bg);
       color: var(--ui-text);
       border: var(--ui-border-thin) solid var(--ui-popup-border-color);
-      border-radius: var(--ui-radius-sm);
+      border-radius: 0.125em;
       box-shadow: var(--ui-popup-shadow);
     }
 
@@ -157,6 +169,10 @@ export const comboboxStyles = [
       padding-inline: var(--ui-spacing-sm);
       overflow-y: auto;
       box-sizing: border-box;
+      /* 1px between every row (and between groups) */
+      display: flex;
+      flex-direction: column;
+      gap: calc(1px * var(--ui-scale));
     }
 
     .status {

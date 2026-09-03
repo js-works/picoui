@@ -56,12 +56,12 @@ const pillsStyles = css`
     align-items: center;
     gap: calc(6px * var(--ui-scale));
     flex: none;
-    background: var(--ui-color-neutral-200);
-    color: var(--ui-color-neutral-800);
-    border: var(--ui-border-thin) solid var(--ui-color-neutral-300);
-    border-radius: calc(3px * var(--ui-scale));
-    padding-block: calc(1px * var(--ui-scale));
-    padding-inline-start: calc(6px * var(--ui-scale));
+    background: var(--ui-color-neutral-100);
+    color: var(--ui-color-neutral-700);
+    border: var(--ui-border-thin) solid var(--ui-color-neutral-400);
+    border-radius: var(--ui-radius-sm);
+    padding-block: calc(3px * var(--ui-scale));
+    padding-inline-start: var(--ui-spacing-sm);
     padding-inline-end: var(--ui-spacing-sm);
     font-size: 0.875em;
     line-height: 1;
@@ -85,7 +85,7 @@ const pillsStyles = css`
     line-height: 1;
     padding: 0;
     cursor: pointer;
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   .pill-remove:hover {

@@ -2,7 +2,7 @@ import { LitElement, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { optionStyles } from "./uu-option.styles.js";
-import { checkIcon, checkSquareIcon } from "../icons/icons.js";
+import { checkIcon } from "../icons/icons.js";
 
 /**
  * A single choice inside `Select` (optionally grouped under `OptionGroup`) —
@@ -27,8 +27,9 @@ export class Option extends LitElement {
   @property({ type: Boolean, reflect: true })
   accessor active = false;
 
-  // Mirrors the owner's `multiple` — swaps the checkmark for a checkbox-style
-  // glyph so a multi-select listbox reads as one at a glance.
+  // Mirrors the owner's `multiple` — turns the leading tick slot into an
+  // always-visible checkbox square (styled in CSS) so a multi-select listbox
+  // reads as one at a glance.
   @property({ type: Boolean, reflect: true })
   accessor multiple = false;
 
@@ -56,13 +57,7 @@ export class Option extends LitElement {
     return html`
       <div class="option">
         <span class="check" aria-hidden="true">
-          ${
-            this.selected
-              ? this.multiple
-                ? checkSquareIcon
-                : checkIcon
-              : nothing
-          }
+          ${this.selected ? checkIcon : nothing}
         </span>
         <span class="label"><slot></slot></span>
       </div>

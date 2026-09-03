@@ -26,13 +26,16 @@ export const optionStyles = [
     .option {
       display: flex;
       align-items: center;
-      gap: var(--ui-spacing-sm);
+      gap: var(--ui-spacing-md);
       box-sizing: border-box;
-      padding-block: calc(3px * var(--ui-scale));
-      padding-inline: var(--ui-spacing-sm);
-      /* Transparent by default (not only on [active]) so the border doesn't
-         change the row's size and shift layout when it becomes active. */
-      border: var(--ui-border-thick) solid transparent;
+      padding-block: calc(5px * var(--ui-scale));
+      padding-inline: var(--ui-spacing-md);
+      /* Transparent by default (not only on [active]) so activating the row
+         doesn't change its size or shift layout. The inline-start edge is
+         permanently wider — that's the accent bar the active row colours in,
+         and being part of the border it follows border-radius cleanly. */
+      border: var(--ui-border-thin) solid transparent;
+      border-inline-start-width: calc(4px * var(--ui-scale));
       border-radius: var(--ui-radius-sm);
       color: var(--ui-text);
       cursor: pointer;
@@ -44,30 +47,55 @@ export const optionStyles = [
     }
 
     .option:hover {
-      background: var(--ui-color-neutral-100);
+      background: var(--ui-color-primary-50);
     }
 
-    /* Keyboard-highlighted — distinct from [selected], which marks the actual
-       current value. A focus-ring-like outline rather than a filled
-       background, so it reads as "the cursor is here". */
+    /* Selected rows are marked by the checkbox/tick alone — no row fill, so a
+       long list of picks doesn't turn into a wall of colour. */
+
+    /* Keyboard/pointer-highlighted — distinct from [selected], which marks the
+       actual current value. A hairline accent outline with a heavier
+       inline-start bar over an accent wash, so it reads as "the cursor is
+       here". */
     :host([active]) .option {
       border-color: var(--ui-color-primary-500);
-      background: transparent;
+      background: var(--ui-color-primary-50);
     }
 
-    :host([selected]) .option {
-      font-weight: 600;
-    }
-
-    /* Fixed-width slot, always reserved so labels line up — sized for the
-       1.1em multi-select checked icon plus breathing room. */
+    /* Fixed-size leading slot, always reserved so labels line up. Single-select:
+       a bare checkmark shown only when selected. */
     .check {
       flex: none;
-      width: 1.1em;
-      padding-inline: 0.15em;
-      box-sizing: content-box;
+      width: 1.15em;
+      height: 1.15em;
+      box-sizing: border-box;
       display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--ui-color-primary-500);
+    }
+
+    .check svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    /* Multi-select: the slot becomes an always-visible checkbox square —
+       hollow when unpicked, filled accent with a white tick when picked. */
+    :host([multiple]) .check {
+      border: var(--ui-border-thin) solid var(--ui-color-neutral-400);
+      border-radius: var(--ui-radius-xs);
+      color: var(--ui-color-on-accent);
+    }
+
+    :host([multiple][selected]) .check {
+      background: var(--ui-color-primary-500);
+      border-color: var(--ui-color-primary-500);
+    }
+
+    :host([multiple][selected]) .check svg {
+      width: 0.85em;
+      height: 0.85em;
     }
 
     .label {
